@@ -7,7 +7,6 @@
  **     TouchSense Kernel Module main entry-point.
  **
  ** Portions Copyright (c) 2008-2014 Immersion Corporation. All Rights Reserved.
- ** Copyright (C) 2015 XiaoMi, Inc.
  **
  ** This file contains Original Code and/or Modifications of Original Code
  ** as defined in and that are subject to the GNU Public License v2 -
@@ -58,8 +57,8 @@ static atomic_t g_bRuntimeRecord;
 #define VERSION_STR " v5.0.22.1\n"                  /* DO NOT CHANGE - this is auto-generated */
 #define VERSION_STR_LEN 16                          /* account extra space for future extra digits in version number */
 static char g_szDeviceName[  (VIBE_MAX_DEVICE_NAME_LENGTH
-		+ VERSION_STR_LEN)
-* NUM_ACTUATORS];       /* initialized in init_module */
+                            + VERSION_STR_LEN)
+                            * NUM_ACTUATORS];       /* initialized in init_module */
 static size_t g_cchDeviceName;                      /* initialized in init_module */
 
 /* Flag indicating whether the driver is in use */
@@ -101,7 +100,7 @@ asmlinkage void _DbgOut(int level, const char *fmt,...)
 {
 	static char printk_buf[MAX_DEBUG_BUFFER_LENGTH];
 	static char prefix[6][4] =
-	{" * ", " ! ", " ? ", " I ", " V", " O "};
+			{" * ", " ! ", " ? ", " I ", " V", " O "};
 
 	int nDbgLevel = atomic_read(&g_nDebugLevel);
 
@@ -286,38 +285,15 @@ MODULE_AUTHOR("Immersion Corporation");
 MODULE_DESCRIPTION("TouchSense Kernel Module");
 MODULE_LICENSE("GPL v2");
 
-static int  vibrator_probe(struct platform_device *pdev)
+static int tspdrv_probe(struct platform_device *pdev)
 {
 	int nRet, i;   /* initialized below */
-
-	/*xiaomi modification begin*/
-	struct pinctrl_state *set_state =NULL;
-
-	nRet = isa1000_vib_set_clock(pdev);
-
-	pdev->dev.pins = kmalloc(sizeof(struct dev_pin_info),GFP_KERNEL);
-	pdev->dev.pins->p = devm_pinctrl_get(&pdev->dev);
-	if (IS_ERR_OR_NULL(pdev->dev.pins->p)) {
-		pr_err("vibrator_probe: return error in lines%d\n",__LINE__);
-	}
-	set_state = pinctrl_lookup_state(pdev->dev.pins->p, "pwm_default");
-	if (IS_ERR_OR_NULL(set_state)) {
-		pr_err("vibrator_probe: return error in lines%d\n",__LINE__);
-	}
-	pinctrl_select_state(pdev->dev.pins->p, set_state);
-
-	set_state = pinctrl_lookup_state(pdev->dev.pins->p, "pwm_sleep");
-	if (IS_ERR_OR_NULL(set_state)) {
-		pr_err("vibrator_probe: return error in lines%d\n",__LINE__);
-	}
-	pinctrl_select_state(pdev->dev.pins->p, set_state);
-	/*xiaomi modification end*/
 
 	atomic_set(&g_nDebugLevel, DBL_ERROR);
 #ifdef VIBE_RUNTIME_RECORD
 	atomic_set(&g_bRuntimeRecord, 0);
 	DbgOutErr(("*** tspdrv: runtime recorder feature is ON for debugging which should be OFF in release version.\n"
-				"*** tspdrv: please turn off the feature by removing VIBE_RUNTIME_RECODE macro.\n"));
+			"*** tspdrv: please turn off the feature by removing VIBE_RUNTIME_RECODE macro.\n"));
 #endif
 	DbgOutInfo(("tspdrv: init_module.\n"));
 
@@ -351,7 +327,7 @@ static int  vibrator_probe(struct platform_device *pdev)
 
 	DbgRecorderInit(());
 
-	ImmVibeSPI_ForceOut_Initialize();
+	ImmVibeSPI_ForceOut_Initialize(pdev);
 	VibeOSKernelLinuxInitTimer();
 	ResetOutputData();
 
@@ -371,7 +347,7 @@ static int  vibrator_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static void __exit tspdrv_exit(void)
+static int tspdrv_remove(struct platform_device *pdev)
 {
 	DbgOutInfo(("tspdrv: cleanup_module.\n"));
 
@@ -388,6 +364,8 @@ static void __exit tspdrv_exit(void)
 #else
 	misc_deregister(&miscdev);
 #endif
+
+	return 0;
 }
 
 static int open(struct inode *inode, struct file *file)
@@ -431,8 +409,7 @@ static ssize_t read(struct file *file, char *buf, size_t count, loff_t *ppos)
 	if (0 == nBufSize)
 		return 0;
 
-	if (0 != copy_to_user(buf, g_szDeviceName + (*ppos), nBufSize))
-	{
+	if (0 != copy_to_user(buf, g_szDeviceName + (*ppos), nBufSize)) {
 		/* Failed to copy all the data, exit */
 		DbgOutErr(("tspdrv: copy_to_user failed.\n"));
 		return 0;
@@ -451,8 +428,7 @@ static ssize_t write(struct file *file, const char *buf, size_t count, loff_t *p
 	 ** Prevent unauthorized caller to write data.
 	 ** TouchSense service is the only valid caller.
 	 */
-	if (file->private_data != (void*)TSPDRV_MAGIC_NUMBER)
-	{
+	if (file->private_data != (void*)TSPDRV_MAGIC_NUMBER) {
 		DbgOutErr(("tspdrv: unauthorized write.\n"));
 		return -EACCES;
 	}
@@ -535,105 +511,99 @@ static int ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsig
 #endif
 
 	case TSPDRV_SET_DBG_LEVEL:
-		{
-			long nDbgLevel;
-			if (0 != copy_from_user((void *)&nDbgLevel, (const void __user *)arg, sizeof(long))) {
-				/* Error copying the data */
-				DbgOutErr(("copy_from_user failed to copy debug level data.\n"));
-				return -1;
-			}
-
-			if (DBL_TEMP <= nDbgLevel &&  nDbgLevel <= DBL_OVERKILL) {
-				atomic_set(&g_nDebugLevel, nDbgLevel);
-			} else {
-				DbgOutErr(("Invalid debug level requested, ignored."));
-			}
-
-			break;
+	{
+		long nDbgLevel;
+		if (0 != copy_from_user((void *)&nDbgLevel, (const void __user *)arg, sizeof(long))) {
+			/* Error copying the data */
+			DbgOutErr(("copy_from_user failed to copy debug level data.\n"));
+			return -1;
 		}
+
+		if (DBL_TEMP <= nDbgLevel &&  nDbgLevel <= DBL_OVERKILL)
+			atomic_set(&g_nDebugLevel, nDbgLevel);
+		else
+			DbgOutErr(("Invalid debug level requested, ignored."));
+
+		break;
+	}
 
 	case TSPDRV_GET_DBG_LEVEL:
 		return atomic_read(&g_nDebugLevel);
 
 #ifdef VIBE_RUNTIME_RECORD
 	case TSPDRV_SET_RUNTIME_RECORD_FLAG:
-		{
-			long nRecordFlag;
-			if (0 != copy_from_user((void *)&nRecordFlag, (const void __user *)arg, sizeof(long))) {
-				/* Error copying the data */
-				DbgOutErr(("copy_from_user failed to copy runtime record flag.\n"));
-				return -1;
-			}
-
-			atomic_set(&g_bRuntimeRecord, nRecordFlag);
-			if (nRecordFlag) {
-				int i;
-				for (i=0; i<NUM_ACTUATORS; i++) {
-					DbgRecorderReset((i));
-				}
-			}
-			break;
+	{
+		long nRecordFlag;
+		if (0 != copy_from_user((void *)&nRecordFlag, (const void __user *)arg, sizeof(long))) {
+			/* Error copying the data */
+			DbgOutErr(("copy_from_user failed to copy runtime record flag.\n"));
+			return -1;
 		}
+
+		atomic_set(&g_bRuntimeRecord, nRecordFlag);
+		if (nRecordFlag) {
+			int i;
+			for (i = 0; i < NUM_ACTUATORS; i++) {
+				DbgRecorderReset((i));
+			}
+		}
+		break;
+	}
 	case TSPDRV_GET_RUNTIME_RECORD_FLAG:
 		return atomic_read(&g_bRuntimeRecord);
 	case TSPDRV_SET_RUNTIME_RECORD_BUF_SIZE:
-		{
-			long nRecorderBufSize;
-			if (0 != copy_from_user((void *)&nRecorderBufSize, (const void __user *)arg, sizeof(long))) {
-				/* Error copying the data */
-				DbgOutErr(("copy_from_user failed to copy recorder buffer size.\n"));
-				return -1;
-			}
-
-			if (0 == DbgSetRecordBufferSize(nRecorderBufSize)) {
-				DbgOutErr(("DbgSetRecordBufferSize failed.\n"));
-				return -1;
-			}
-			break;
+	{
+		long nRecorderBufSize;
+		if (0 != copy_from_user((void *)&nRecorderBufSize, (const void __user *)arg, sizeof(long))) {
+			/* Error copying the data */
+			DbgOutErr(("copy_from_user failed to copy recorder buffer size.\n"));
+			return -1;
 		}
+
+		if (0 == DbgSetRecordBufferSize(nRecorderBufSize)) {
+			DbgOutErr(("DbgSetRecordBufferSize failed.\n"));
+			return -1;
+		}
+		break;
+	}
 	case TSPDRV_GET_RUNTIME_RECORD_BUF_SIZE:
 		return DbgGetRecordBufferSize();
 #endif
 
 	case TSPDRV_SET_DEVICE_PARAMETER:
-		{
-			device_parameter deviceParam;
+	{
+		device_parameter deviceParam;
 
-			if (0 != copy_from_user((void *)&deviceParam, (const void __user *)arg, sizeof(deviceParam)))
-			{
-				/* Error copying the data */
-				DbgOutErr(("tspdrv: copy_from_user failed to copy kernel parameter data.\n"));
+		if (0 != copy_from_user((void *)&deviceParam, (const void __user *)arg, sizeof(deviceParam))) {
+			/* Error copying the data */
+			DbgOutErr(("tspdrv: copy_from_user failed to copy kernel parameter data.\n"));
+			return -1;
+		}
+
+		switch (deviceParam.nDeviceParamID) {
+		case VIBE_KP_CFG_UPDATE_RATE_MS:
+			/* Update the timer period */
+			g_nTimerPeriodMs = deviceParam.nDeviceParamValue;
+#ifdef CONFIG_HIGH_RES_TIMERS
+			/* For devices using high resolution timer we need to update the ktime period value */
+			g_ktTimerPeriod = ktime_set(0, g_nTimerPeriodMs * 1000000);
+#endif
+			break;
+
+		case VIBE_KP_CFG_FREQUENCY_PARAM1:
+		case VIBE_KP_CFG_FREQUENCY_PARAM2:
+		case VIBE_KP_CFG_FREQUENCY_PARAM3:
+		case VIBE_KP_CFG_FREQUENCY_PARAM4:
+		case VIBE_KP_CFG_FREQUENCY_PARAM5:
+		case VIBE_KP_CFG_FREQUENCY_PARAM6:
+			if (0 > ImmVibeSPI_ForceOut_SetFrequency(deviceParam.nDeviceIndex,
+					deviceParam.nDeviceParamID, deviceParam.nDeviceParamValue)) {
+				DbgOutErr(("tspdrv: cannot set device frequency parameter.\n"));
 				return -1;
 			}
-
-			switch (deviceParam.nDeviceParamID)
-			{
-			case VIBE_KP_CFG_UPDATE_RATE_MS:
-				/* Update the timer period */
-				g_nTimerPeriodMs = deviceParam.nDeviceParamValue;
-
-
-
-#ifdef CONFIG_HIGH_RES_TIMERS
-				/* For devices using high resolution timer we need to update the ktime period value */
-				g_ktTimerPeriod = ktime_set(0, g_nTimerPeriodMs * 1000000);
-#endif
-				break;
-
-			case VIBE_KP_CFG_FREQUENCY_PARAM1:
-			case VIBE_KP_CFG_FREQUENCY_PARAM2:
-			case VIBE_KP_CFG_FREQUENCY_PARAM3:
-			case VIBE_KP_CFG_FREQUENCY_PARAM4:
-			case VIBE_KP_CFG_FREQUENCY_PARAM5:
-			case VIBE_KP_CFG_FREQUENCY_PARAM6:
-				if (0 > ImmVibeSPI_ForceOut_SetFrequency(deviceParam.nDeviceIndex, deviceParam.nDeviceParamID, deviceParam.nDeviceParamValue))
-				{
-					DbgOutErr(("tspdrv: cannot set device frequency parameter.\n"));
-					return -1;
-				}
-				break;
-			}
+			break;
 		}
+	}
 	}
 	return 0;
 }
@@ -664,23 +634,29 @@ static void platform_release(struct device *dev)
 	DbgOutErr(("tspdrv: platform_release.\n"));
 }
 
-static const struct of_device_id vibrator_dt_match[] = {
-	{ .compatible = "vibrator,isa1000", },
+static const struct of_device_id tspdrv_dt_match[] = {
+	{ .compatible = "vibrator,tspdrv", },
 	{ },
 };
 
-static struct platform_driver vibrator_drv = {
-	.probe		= vibrator_probe,
+static struct platform_driver tspdrv_drv = {
+	.probe = tspdrv_probe,
+	.remove = tspdrv_remove,
 	.driver = {
-		.name	= "vibrator-isa1000",
-		.owner	= THIS_MODULE,
-		.of_match_table = of_match_ptr(vibrator_dt_match),
+		.name = "vibrator-tspdrv",
+		.owner = THIS_MODULE,
+		.of_match_table = of_match_ptr(tspdrv_dt_match),
 	},
 };
 
 static int __init tspdrv_init(void)
 {
-	return platform_driver_register(&vibrator_drv);
+	return platform_driver_register(&tspdrv_drv);
 }
 module_init(tspdrv_init);
+
+static void __exit tspdrv_exit(void)
+{
+	return platform_driver_unregister(&tspdrv_drv);
+}
 module_exit(tspdrv_exit);

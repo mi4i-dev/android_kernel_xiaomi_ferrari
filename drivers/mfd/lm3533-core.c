@@ -2,8 +2,8 @@
  * lm3533-core.c -- LM3533 Core
  *
  * Copyright (C) 2011-2012 Texas Instruments
+ *
  * Author: Johan Hovold <jhovold@gmail.com>
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under  the terms of the GNU General  Public License as published by the
@@ -126,7 +126,7 @@ int lm3533_update(struct lm3533 *lm3533, u8 reg, u8 val, u8 mask)
 {
 	int ret;
 
-	dev_info(lm3533->dev, "update [%02x]: %02x/%02x\n", reg, val, mask);
+	dev_dbg(lm3533->dev, "update [%02x]: %02x/%02x\n", reg, val, mask);
 
 	ret = regmap_update_bits(lm3533->regmap, reg, mask, val);
 	if (ret < 0) {
@@ -397,7 +397,8 @@ static int lm3533_device_als_init(struct lm3533 *lm3533)
 	lm3533_als_devs[0].platform_data = pdata->als;
 	lm3533_als_devs[0].pdata_size = sizeof(*pdata->als);
 
-	ret = mfd_add_devices(lm3533->dev, 0, lm3533_als_devs, 1, NULL, 0,NULL);
+	ret = mfd_add_devices(lm3533->dev, 0, lm3533_als_devs, 1, NULL,
+			      0, NULL);
 	if (ret) {
 		dev_err(lm3533->dev, "failed to add ALS device\n");
 		return ret;
@@ -426,7 +427,7 @@ static int lm3533_device_bl_init(struct lm3533 *lm3533)
 	}
 
 	ret = mfd_add_devices(lm3533->dev, 0, lm3533_bl_devs,
-			      pdata->num_backlights, NULL, 0,NULL);
+			      pdata->num_backlights, NULL, 0, NULL);
 	if (ret) {
 		dev_err(lm3533->dev, "failed to add backlight devices\n");
 		return ret;
@@ -455,7 +456,7 @@ static int lm3533_device_led_init(struct lm3533 *lm3533)
 	}
 
 	ret = mfd_add_devices(lm3533->dev, 0, lm3533_led_devs,
-			      pdata->num_leds, NULL, 0,NULL);
+			      pdata->num_leds, NULL, 0, NULL);
 	if (ret) {
 		dev_err(lm3533->dev, "failed to add LED devices\n");
 		return ret;
@@ -466,7 +467,7 @@ static int lm3533_device_led_init(struct lm3533 *lm3533)
 	return 0;
 }
 
-static int  lm3533_device_setup(struct lm3533 *lm3533,
+static int lm3533_device_setup(struct lm3533 *lm3533,
 					struct lm3533_platform_data *pdata)
 {
 	int ret;
@@ -803,7 +804,7 @@ static int lm3533_i2c_probe(struct i2c_client *i2c,
 	struct lm3533 *lm3533;
 	int ret;
 
-	dev_info(&i2c->dev, "%s\n", __func__);
+	dev_dbg(&i2c->dev, "%s\n", __func__);
 
 	if (!i2c_check_functionality(i2c->adapter,
 				I2C_FUNC_SMBUS_I2C_BLOCK)) {
@@ -848,7 +849,6 @@ static struct of_device_id lm3533_match_table[] = {
 		{},
 };
 MODULE_DEVICE_TABLE(of, lm3533_match_table);
-
 
 static const struct i2c_device_id lm3533_i2c_ids[] = {
 	{ "lm3533", 0 },

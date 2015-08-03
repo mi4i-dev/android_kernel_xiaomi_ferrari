@@ -128,40 +128,6 @@
 			};
 		};
 
-		vibrator_pwm {
-			qcom,pins = <&gp 97>;
-			qcom,num-grp-pins = <1>;
-			qcom,pin-func = <1>;
-			label = "vibrator-pwm";
-
-			vibrator_pwm_default: pwm_default {
-				drive-strength = <2>;
-				bias-disable = <0>;
-			};
-
-			vibrator_pwm_sleep: pwm_sleep {
-				drive-strength = <2>;
-				bias-pull-down;
-			};
-		};
-
-		vibrator_pin {
-			qcom,pins = <&gp 120>, <&gp 121>;
-			qcom,num-grp-pins = <2>;
-			qcom,pin-func = <0>;
-			label = "vibrator-pin";
-
-			vibrator_pin_enable: vibrator_pin_enable {
-				drive-strength = <16>;
-				bias-disable = <0>;
-			};
-
-			vibrator_pin_disable: vibrator_pin_disable {
-				drive-strength = <2>;
-				bias-pull-down;
-			};
-		};
-
 		/* SDC pin type */
 		sdc: sdc {
 			/* 0-2 for sdc1 4-6 for sdc2 */

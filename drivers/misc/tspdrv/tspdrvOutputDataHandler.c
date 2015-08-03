@@ -8,7 +8,6 @@
  **     ‘This module supports only one actuator and one sample per update.
  **
  ** Portions Copyright (c) 2011-2014 Immersion Corporation. All Rights Reserved.
- ** Copyright (C) 2015 XiaoMi, Inc.
  **
  ** This file contains Original Code and/or Modifications of Original Code
  ** as defined in and that are subject to the GNU Public License v2 -

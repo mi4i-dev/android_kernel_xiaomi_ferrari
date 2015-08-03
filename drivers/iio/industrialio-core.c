@@ -1,7 +1,6 @@
 /* The industrial I/O core
  *
  * Copyright (c) 2008 Jonathan Cameron
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 as published by
@@ -100,9 +99,6 @@ static const char * const iio_modifier_names[] = {
 static const char * const iio_chan_info_postfix[] = {
 	[IIO_CHAN_INFO_RAW] = "raw",
 	[IIO_CHAN_INFO_PROCESSED] = "input",
-/*
-	[IIO_CHAN_INFO_RAW_DUAL] = "raw_dual",
-	[IIO_CHAN_INFO_PROCESSED_DUAL] = "input_dual",*/
 	[IIO_CHAN_INFO_SCALE] = "scale",
 	[IIO_CHAN_INFO_OFFSET] = "offset",
 	[IIO_CHAN_INFO_CALIBSCALE] = "calibscale",

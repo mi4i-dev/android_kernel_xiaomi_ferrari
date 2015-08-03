@@ -8,7 +8,6 @@
  *
  * (C) Copyright 2002-2004 by David Brownell
  * All Rights Reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This software is licensed under the GNU GPL version 2.
  */
@@ -540,13 +539,6 @@ struct usb_gadget_ops {
  * driver suspend() calls.  They are valid only when is_otg, and when the
  * device is acting as a B-Peripheral (so is_a_peripheral is false).
  */
-#define GADGET_STATE_PROCESS(x) (0x0f & (x))
-#define GADGET_STATE_DONE(x)	(0xf0 & (x))
-#define GADGET_STATE_IDLE				0x00
-#define GADGET_STATE_PROCESS_GET		0x01
-#define GADGET_STATE_PROCESS_SET		0x02
-#define GADGET_STATE_DONE_SET			0x12
-#define GADGET_STATE_DONE_RESET			0x14
 struct usb_gadget {
 	struct work_struct		work;
 	/* readonly to gadget driver */
@@ -574,7 +566,6 @@ struct usb_gadget {
 	bool				remote_wakeup;
 	void				*private;
 	u32				xfer_isr_count;
-	u8					usb_sys_state;
 };
 #define work_to_gadget(w)	(container_of((w), struct usb_gadget, work))
 
@@ -879,7 +870,6 @@ static inline int usb_gadget_disconnect(struct usb_gadget *gadget)
  * be cleared, to make the device behave identically whether or not
  * power is maintained.
  */
-
 struct usb_gadget_driver {
 	char			*function;
 	enum usb_device_speed	max_speed;

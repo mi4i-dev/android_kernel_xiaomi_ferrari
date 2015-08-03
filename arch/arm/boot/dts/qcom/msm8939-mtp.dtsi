@@ -325,16 +325,15 @@
 			prox_thres_near = <300>;
 			prox_thres_far = <200>;
 		};
-		};
+	};
 
-	vibrator-isa1000 {
-		compatible = "vibrator,isa1000";
+	vibrator-tspdrv {
+		compatible = "vibrator,tspdrv";
 		clocks = <&clock_gcc clk_gcc_gp1_clk>;
 		clock-names = "vibrator_pwm";
-
-		pinctrl-names = "pwm_default", "pwm_sleep";
-		pinctrl-0 = <&vibrator_pwm_default &vibrator_pin_enable>;
-		pinctrl-1 = <&vibrator_pwm_sleep &vibrator_pin_disable>;
+		
+		isa1000,gpio-en = <&msm_gpio 120 0>;
+		isa1000,gpio-pwm-en = <&msm_gpio 121 0>;
 	};
 };
 
