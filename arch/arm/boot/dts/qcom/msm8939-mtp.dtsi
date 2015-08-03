@@ -1,5 +1,4 @@
-/* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -17,48 +16,49 @@
 &soc {
 	i2c@78b5000 { /* BLSP1 QUP1 */
 		lm3533@38 {
-						compatible = "ti,lm3533";
-                        reg = <0x38>;
-                        lm3533,hwen-gpio = <&msm_gpio 98 0x00>;
-                        lm3533,boost_ovp = <2>;  /* 32v */
-                        lm3533,boost_freq = <0>;  /* 500k */
-                        lm3533,num_backlights = <1>;
-                        lm3533,num_leds = <4>;
-                        lm3533,backlight_0 {
-						 		lm3533,name = "lm3533-backlight0";
-                                lm3533,bl-max-current = <20200>;
-                                lm3533,bl-def-brightness = <130>;
-                                lm3533,bl-pwm = <0x01>;
-                                lm3533,bl-linear = <1>;
-                                };
-                        lm3533,led_0 {
-								lm3533,name = "red";
-                                lm3533,led-max-current = <5000>;
-                                lm3533,led-pwm = <0x00>;
-                                lm3533,led-delay-on = <650>;
-                                lm3533,led-delay-off = <200>;
-                                };
-                        lm3533,led_1 {
-								lm3533,name = "blue";
-                                lm3533,led-max-current = <5000>;
-                                lm3533,led-pwm = <0x00>;
-                                lm3533,led-delay-on = <650>;
-                                lm3533,led-delay-off = <200>;
-                                };
-                        lm3533,led_2 {
-								lm3533,name = "green";
-                                lm3533,led-max-current = <5000>;
-                                lm3533,led-pwm = <0x00>;
-                                lm3533,led-delay-on = <650>;
-                                lm3533,led-delay-off = <200>;
-                                };
-                        lm3533,led_3 {
-                                lm3533,name = "button-backlight";
-                                lm3533,led-max-current = <5000>;
-                                lm3533,led-pwm = <0x00>;
-                                };
-                };
-      };
+			compatible = "ti,lm3533";
+			reg = <0x38>;
+			lm3533,hwen-gpio = <&msm_gpio 98 0x00>;
+			lm3533,boost_ovp = <2>;  /* 32v */
+			lm3533,boost_freq = <0>;  /* 500k */
+			lm3533,num_backlights = <1>;
+			lm3533,num_leds = <4>;
+			lm3533,backlight_0 {
+				lm3533,name = "lm3533-backlight0";
+				lm3533,bl-max-current = <20200>;
+				lm3533,bl-def-brightness = <130>;
+				lm3533,bl-pwm = <0x01>;
+				lm3533,bl-linear = <1>;
+			};
+			lm3533,led_0 {
+				lm3533,name = "red";
+				lm3533,led-max-current = <5000>;
+				lm3533,led-pwm = <0x00>;
+				lm3533,led-delay-on = <650>;
+				lm3533,led-delay-off = <200>;
+			};
+			lm3533,led_1 {
+				lm3533,name = "blue";
+				lm3533,led-max-current = <5000>;
+				lm3533,led-pwm = <0x00>;
+				lm3533,led-delay-on = <650>;
+				lm3533,led-delay-off = <200>;
+			};
+			lm3533,led_2 {
+				lm3533,name = "green";
+				lm3533,led-max-current = <5000>;
+				lm3533,led-pwm = <0x00>;
+				lm3533,led-delay-on = <650>;
+				lm3533,led-delay-off = <200>;
+			};
+			lm3533,led_3 {
+				lm3533,name = "button-backlight";
+				lm3533,led-max-current = <5000>;
+				lm3533,led-pwm = <0x00>;
+			};
+		};
+	};
+
 	i2c@78b9000 { /* BLSP1 QUP5 */
 		synaptics@20 {
 			compatible = "synaptics,dsx";
@@ -245,24 +245,6 @@
 		qcom,key-codes = <139 102 158>;
 	};
 
-	i2c@78ba000 { /* BLSP1 QUP6 */
-		nfc-nci@e {
-			compatible = "qcom,nfc-nci";
-			reg = <0x0e>;
-			//qcom,irq-gpio = <&msm_gpio 21 0x00>;
-			//qcom,dis-gpio = <&msm_gpio 20 0x00>;
-			qcom,clk-src = "BBCLK2";
-			interrupt-parent = <&msm_gpio>;
-			interrupts = <21 0>;
-			interrupt-names = "nfc_irq";
-			//pinctrl-names = "nfc_active","nfc_suspend";
-			//pinctrl-0 = <&nfc_int_active &nfc_disable_active>;
-			//pinctrl-1 = <&nfc_int_suspend &nfc_disable_suspend>;
-			qcom,clk-gpio = <&pm8916_gpios 2 0>;
-			clocks = <&clock_rpm clk_bb_clk2_pin>;
-			clock-names = "ref_clk";
-		};
-	};
 	gpio_keys {
 		compatible = "gpio-keys";
 		input-name = "gpio-keys";
@@ -316,33 +298,34 @@
 		};
 	};
 
-        i2c@78b6000 { /* BLSP1 QUP2 */
-                x6db0@08 { /* Gyroscope and accelerometer sensor combo */
-                        compatible = "st,lsm6db0";
-                        reg = <0x08>;
+	i2c@78b6000 { /* BLSP1 QUP2 */
+		x6db0@08 { /* Gyroscope and accelerometer sensor combo */
+			compatible = "st,lsm6db0";
+			reg = <0x08>;
 
 			interrupt-parent = <&msm_gpio>;
 			interrupts = <115 0x2004>;
-                        st,reset-gpio = <&msm_gpio 20 0x00>;
-                        st,wakeup-gpio = <&msm_gpio 102 0x00>;
-                        vdd-supply = <&pm8916_l6>;
-                        vmag-supply = <&pm8916_l17>;
-                };
-                cm36686@60 {
-                        compatible = "cm,cm36686";
-                        reg = <0x60>;
+			st,reset-gpio = <&msm_gpio 20 0x00>;
+			st,wakeup-gpio = <&msm_gpio 102 0x00>;
+			vdd-supply = <&pm8916_l6>;
+			vmag-supply = <&pm8916_l17>;
+		};
+
+		cm36686@60 {
+			compatible = "cm,cm36686";
+			reg = <0x60>;
 
 			interrupt-parent = <&msm_gpio>;
-                        interrupts = <113 0x2008>;
+			interrupts = <113 0x2008>;
 
 			pinctrl-names = "default";
 			pinctrl-0 = <&cm36686_int_default>;
-                        als_trans_ratio = <16>;
-                        prox_default_offset = <1000>;
-                        prox_thres_near = <300>;
-                        prox_thres_far = <200>;
-                };
-        };
+			als_trans_ratio = <16>;
+			prox_default_offset = <1000>;
+			prox_thres_near = <300>;
+			prox_thres_far = <200>;
+		};
+		};
 
 	vibrator-isa1000 {
 		compatible = "vibrator,isa1000";
@@ -359,44 +342,6 @@
 	status = "ok";
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart_console_sleep>;
-};
-
-&pm8916_gpios {
-	gpio@c100 { /* GPIO 2 */
-		/* NFC_CLK_REQ */
-		qcom,mode = <0>; /* QPNP_PIN_MODE_DIG_IN */
-		qcom,pull = <5>; /* QPNP_PIN_PULL_NO */
-		qcom,vin-sel = <2>; /* QPNP_PIN_VIN2 */
-		qcom,src-sel = <2>; /* QPNP_PIN_SEL_FUNC_1 */
-		qcom,master-en = <1>;
-	};
-};
-&spmi_bus {
-	qcom,pm8916@1 {
-		qcom,vibrator@c000 {
-			status = "okay";
-			qcom,vib-timeout-ms = <15000>;
-			qcom,vib-vtg-level-mV = <3100>;
-		};
-	};
-
-	qcom,pm8916@0 {
-		qcom,leds@a100 {
-			status = "okay";
-			qcom,led_mpp_2 {
-				label = "mpp";
-				linux,name = "button-backlight";
-				linux,default-trigger = "none";
-				qcom,default-state = "off";
-				qcom,max-current = <40>;
-				qcom,current-setting = <5>;
-				qcom,id = <6>;
-				qcom,mode = "manual";
-				qcom,source-sel = <1>;
-				qcom,mode-ctrl = <0x60>;
-			};
-		};
-	};
 };
 
 &sdhc_1 {
@@ -420,27 +365,6 @@
 };
 
 &sdhc_2 {
-	vdd-supply = <&pm8916_l11>;
-	qcom,vdd-voltage-level = <2800000 2950000>;
-	qcom,vdd-current-level = <15000 400000>;
-
-	vdd-io-supply = <&pm8916_l12>;
-	qcom,vdd-io-voltage-level = <1800000 2950000>;
-	qcom,vdd-io-current-level = <200 50000>;
-
-	pinctrl-names = "active", "sleep";
-	pinctrl-0 = <&sdc2_clk_on &sdc2_cmd_on &sdc2_data_on &sdc2_cd_on>;
-	pinctrl-1 = <&sdc2_clk_off &sdc2_cmd_off &sdc2_data_off &sdc2_cd_off>;
-
-	#address-cells = <0>;
-	interrupt-parent = <&sdhc_2>;
-	interrupts = <0 1 2>;
-	#interrupt-cells = <1>;
-	interrupt-map-mask = <0xffffffff>;
-	interrupt-map = <0 &intc 0 125 0
-			1 &intc 0 221 0>;
-	interrupt-names = "hc_irq", "pwr_irq";
-
 	status = "disable";
 };
 
@@ -524,9 +448,7 @@
 	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
 	qcom,dsi-pref-prim-pan = <&dsi_jdi_1080_vid>;
 
-	//qcom,platform-enable-gpio = <&msm_gpio 97 0>;
 	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
-	//qcom,platform-bklight-en-gpio = <&msm_gpio 98 0>;
 	qcom,platform-vsp-gpio = <&msm_gpio 116 0>;
 	qcom,platform-vsn-gpio = <&msm_gpio 114 0>;
 };

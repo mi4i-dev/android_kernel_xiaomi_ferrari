@@ -1,5 +1,4 @@
 /* Copyright (c) 2014, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -18,7 +17,6 @@
 &mdss_mdp {
 	dsi_jdi_rsp63311_1080_vid: qcom,mdss_dsi_jdi_rsp63311_1080p_video {
 		qcom,mdss-dsi-panel-name = "jdi rsp63311 1080p video mode dsi panel";
-		qcom,mdss-dsi-panel-id = <9>;
 		qcom,mdss-dsi-panel-controller = <&mdss_dsi0>;
 		qcom,mdss-dsi-panel-type = "dsi_video_mode";
 		qcom,mdss-dsi-panel-destination = "display_1";
@@ -79,36 +77,4 @@
 		qcom,mdss-pan-physical-width-dimension = <61>;
 		qcom,mdss-pan-physical-height-dimension = <109>;
 		qcom,cont-splash-enabled;
-		qcom,dispparam-enabled;
-		qcom,mdss-dsi-dispparam-ceon-command = [
-				39 01 00 00 21 00 02 00 00
-				29 01 00 00 00 00 02 b0 04
-				29 01 00 00 00 00 02 d6 01
-				29 01 00 00 00 00 02 ca 01
-				29 01 00 00 00 00 02 b0 03
-				];
-		qcom,mdss-dsi-dispparam-ceon-command-state = "dsi_hs_mode";
-		qcom,mdss-dsi-dispparam-ceoff-command = [
-				39 01 00 00 21 00 02 00 00
-				29 01 00 00 00 00 02 b0 04
-				29 01 00 00 00 00 02 d6 01
-				29 01 00 00 00 00 02 ca 00
-				29 01 00 00 00 00 02 b0 03
-				];
-		qcom,mdss-dsi-dispparam-ceoff-command-state = "dsi_hs_mode";
-
-		qcom,mdss-dsi-dispparam-cabcon-command_GUI = [
-			39 01 00 00 00 00 02 55 01
-			];
-		qcom,mdss-dsi-dispparam-cabcon-command_STILL = [
-
-				];
-		qcom,mdss-dsi-dispparam-cabcon-command_MOVIE = [
-
-				];
-		qcom,mdss-dsi-dispparam-cabcon-command-state = "dsi_hs_mode";
-		qcom,mdss-dsi-dispparam-cabcoff-command = [
-				39 01 00 00 00 00 02 55 00
-				];
-		qcom,mdss-dsi-dispparam-cabcoff-command-state = "dsi_hs_mode";
 	}; };

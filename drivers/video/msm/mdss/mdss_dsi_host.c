@@ -1,5 +1,4 @@
 /* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1557,7 +1556,6 @@ end:
 }
 
 #define DMA_TX_TIMEOUT 200
-#undef DSI_HOST_DEBUG
 
 static int mdss_dsi_cmd_dma_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 					struct dsi_buf *tp)
@@ -1566,17 +1564,9 @@ static int mdss_dsi_cmd_dma_tx(struct mdss_dsi_ctrl_pdata *ctrl,
 	int domain = MDSS_IOMMU_DOMAIN_UNSECURE;
 	char *bp;
 	struct mdss_dsi_ctrl_pdata *mctrl = NULL;
-	#ifdef DSI_HOST_DEBUG
-	int i;
-#endif
-	bp = tp->data;
-	#ifdef DSI_HOST_DEBUG
-	pr_info("%s: ", __func__);
-	for (i = 0; i < tp->len; i++)
-		pr_info("cmd %x ", *bp++);
 
-	pr_info("\n");
-#endif
+	bp = tp->data;
+
 	len = ALIGN(tp->len, 4);
 	ctrl->dma_size = ALIGN(tp->len, SZ_4K);
 
