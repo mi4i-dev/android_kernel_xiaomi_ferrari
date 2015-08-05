@@ -7,7 +7,6 @@
 #    Targets Kernel 2.6
 #
 # Portions Copyright (c) 2008-2012 Immersion Corporation. All Rights Reserved.
-# Copyright (C) 2015 XiaoMi, Inc.
 #
 # This file contains Original Code and/or Modifications of Original Code
 # as defined in and that are subject to the GNU Public License v2 -

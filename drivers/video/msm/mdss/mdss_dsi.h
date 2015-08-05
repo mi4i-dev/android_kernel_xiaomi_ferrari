@@ -1,5 +1,4 @@
 /* Copyright (c) 2012-2014, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -361,15 +360,6 @@ struct mdss_dsi_ctrl_pdata {
 
 	struct dsi_panel_cmds on_cmds;
 	struct dsi_panel_cmds off_cmds;
-
-	struct dsi_panel_cmds dispparam_cmds;
-	struct dsi_panel_cmds dispparam_cabcon_gui_cmds;
-	struct dsi_panel_cmds dispparam_cabcon_still_cmds;
-	struct dsi_panel_cmds dispparam_cabcon_movie_cmds;
-	struct dsi_panel_cmds dispparam_cabcoff_cmds;
-	struct dsi_panel_cmds dispparam_ceon_cmds;
-	struct dsi_panel_cmds dispparam_ceoff_cmds;
-
 	struct dsi_panel_cmds status_cmds;
 	u32 status_cmds_rlen;
 	u32 status_value;

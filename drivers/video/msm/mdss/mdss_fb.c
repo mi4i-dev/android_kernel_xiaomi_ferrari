@@ -3,7 +3,6 @@
  *
  * Copyright (C) 2007 Google Incorporated
  * Copyright (c) 2008-2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -197,16 +196,14 @@ static int mdss_fb_notify_update(struct msm_fb_data_type *mfd,
 			ret = 1;
 		}
 	} else if (notify == NOTIFY_UPDATE_STOP) {
-		mutex_lock(&mfd->update.lock);
+		mutex_lock(&mfd->no_update.lock);
 		if (mfd->update.init_done)
 			INIT_COMPLETION(mfd->no_update.comp);
 		else {
-			mutex_unlock(&mfd->update.lock);
+			mutex_unlock(&mfd->no_update.lock);
 			pr_err("notify update stop called without init\n");
 			return -EINVAL;
 		}
-		mutex_unlock(&mfd->update.lock);
-		mutex_lock(&mfd->no_update.lock);
 		mfd->no_update.ref_count++;
 		mutex_unlock(&mfd->no_update.lock);
 		ret = wait_for_completion_interruptible_timeout(

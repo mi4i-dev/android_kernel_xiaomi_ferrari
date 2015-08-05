@@ -2,8 +2,8 @@
  * leds-lm3533.c -- LM3533 LED driver
  *
  * Copyright (C) 2011-2012 Texas Instruments
+ *
  * Author: Johan Hovold <jhovold@gmail.com>
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under  the terms of the GNU General  Public License as published by the
@@ -24,6 +24,7 @@
 #include <linux/delay.h>
 
 #include <linux/mfd/lm3533.h>
+
 
 #define LM3533_LVCTRLBANK_MIN		2
 #define LM3533_LVCTRLBANK_MAX		5
@@ -62,6 +63,7 @@ struct lm3533_led {
 	u8 new_brightness;
 };
 
+
 static inline struct lm3533_led *to_lm3533_led(struct led_classdev *cdev)
 {
 	return container_of(cdev, struct lm3533_led, cdev);
@@ -88,46 +90,47 @@ static inline u8 lm3533_led_get_pattern_reg(struct lm3533_led *led,
 	return base + lm3533_led_get_pattern(led) * LM3533_REG_PATTERN_STEP;
 }
 
-static void lm3533_led_update(struct lm3533_led *led)
+static void lm3533_led_work(struct work_struct *work)
 {
+	struct lm3533_led *led = container_of(work, struct lm3533_led, work);
 	static int old_brightness = -1;
+
 	dev_info(led->cdev.dev, "%s - %u\n", __func__, led->new_brightness);
-	if(0 == led->new_brightness)
+
+	if(led->new_brightness == 0)
 	{
-		if(old_brightness == led->new_brightness)
-		{
-			return ;
-		}
+		if(old_brightness == 0)
+			return;
+
 		lm3533_ctrlbank_set_brightness(&led->cb, led->new_brightness);
-		mutex_lock(&(led->lm3533->lock));
-		if((!lcd_bl_open_flag)&&button_bl_open_flag)
-		{
+
+		mutex_lock(&led->lm3533->lock);
+
+		if(!lcd_bl_open_flag && button_bl_open_flag)
 			lm3533_disable(led->lm3533);
-		}
+
 		button_bl_open_flag = false;
-		mutex_unlock(&(led->lm3533->lock));
+
+		mutex_unlock(&led->lm3533->lock);
 	}
 	else
 	{
-		mutex_lock(&(led->lm3533->lock));
-		if((!button_bl_open_flag)&&(!lcd_bl_open_flag))
+		mutex_lock(&led->lm3533->lock);
+
+		if(!button_bl_open_flag && !lcd_bl_open_flag)
 		{
 			lm3533_enable(led->lm3533);
 			mdelay(2);
 			lm3533_init(led->lm3533);
 		}
+
 		button_bl_open_flag = true;
-		mutex_unlock(&(led->lm3533->lock));
+
+		mutex_unlock(&led->lm3533->lock);
+
 		lm3533_ctrlbank_set_brightness(&led->cb, led->new_brightness);
 	}
 	old_brightness = led->new_brightness;
-}
-
-static void lm3533_led_work(struct work_struct *work)
-{
-	struct lm3533_led *led = container_of(work, struct lm3533_led, work);
-
-	lm3533_led_update(led);
 }
 
 static void lm3533_led_set(struct led_classdev *cdev,
@@ -135,7 +138,7 @@ static void lm3533_led_set(struct led_classdev *cdev,
 {
 	struct lm3533_led *led = to_lm3533_led(cdev);
 
-	dev_info(led->cdev.dev, "%s - %d\n", __func__, value);
+	dev_dbg(led->cdev.dev, "%s - %d\n", __func__, value);
 
 	led->new_brightness = value;
 	schedule_work(&led->work);
@@ -434,25 +437,6 @@ static ssize_t store_pwm(struct device *dev,
 	return len;
 }
 
-static ssize_t show_update(struct device *dev,
-					   struct device_attribute *attr,
-					   char *buf)
-{
-	return 1;//scnprintf(buf, PAGE_SIZE, "");
-}
-
-static ssize_t store_update(struct device *dev,
-					   struct device_attribute *attr,
-					   const char *buf, size_t len)
-{
-	u8 val;
-
-	if (kstrtou8(buf, 0, &val))
-		return -EINVAL;
-
-	return len;
-}
-
 static LM3533_ATTR_RW(als_channel);
 static LM3533_ATTR_RW(als_en);
 static LM3533_ATTR_RW(falltime);
@@ -460,7 +444,6 @@ static LM3533_ATTR_RO(id);
 static LM3533_ATTR_RW(linear);
 static LM3533_ATTR_RW(pwm);
 static LM3533_ATTR_RW(risetime);
-static LM3533_ATTR_RW(update);
 
 static struct attribute *lm3533_led_attributes[] = {
 	&dev_attr_als_channel.attr,
@@ -470,7 +453,6 @@ static struct attribute *lm3533_led_attributes[] = {
 	&dev_attr_linear.attr,
 	&dev_attr_pwm.attr,
 	&dev_attr_risetime.attr,
-	&dev_attr_update.attr,
 	NULL,
 };
 
@@ -632,7 +614,7 @@ static struct platform_driver lm3533_led_driver = {
 };
 module_platform_driver(lm3533_led_driver);
 
-MODULE_AUTHOR("feng wei <fengwei84@gmail.com>");
+MODULE_AUTHOR("Johan Hovold <jhovold@gmail.com>");
 MODULE_DESCRIPTION("LM3533 LED driver");
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("platform:lm3533-leds");

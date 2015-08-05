@@ -36,7 +36,7 @@
 		qcom,msm-codec-type = "internal";
 		qcom,tapan-mclk-clk-freq = <9600000>;
 		pinctrl-names = "cdc_slim_lines_act",
-		                "cdc_slim_lines_sus",
+				"cdc_slim_lines_sus",
 				"cross_conn_det_act",
 				"cross_conn_det_sus",
 				"cdc_lines_quat_ext_act",

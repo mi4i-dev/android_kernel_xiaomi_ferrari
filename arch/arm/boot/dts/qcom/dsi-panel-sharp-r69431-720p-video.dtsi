@@ -1,5 +1,4 @@
 /* Copyright (c) 2014, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -74,40 +73,6 @@
 		qcom,mdss-dsi-bl-pmic-control-type = "bl_ctrl_sic";
 		qcom,mdss-dsi-reset-sequence = <1 5>, <0 5>, <1 120>;
 		//qcom,cont-splash-enabled;
-		//qcom,dispparam-enabled;
-		qcom,mdss-dsi-dispparam-ceon-command = [
-
-				];
-		qcom,mdss-dsi-dispparam-ceon-command-state = "dsi_hs_mode";
-		qcom,mdss-dsi-dispparam-ceoff-command = [
-				15 01 00 00 10 00 02 55 01
-				];
-		qcom,mdss-dsi-dispparam-ceoff-command-state = "dsi_hs_mode";
-		qcom,mdss-dsi-dispparam-warm-command = [
-				];
-		qcom,mdss-dsi-dispparam-warm-command-state = "dsi_hs_mode";
-
-		qcom,mdss-dsi-dispparam-default-command = [
-
-			];
-		qcom,mdss-dsi-dispparam-default-command-state = "dsi_hs_mode";
-
-		qcom,mdss-dsi-dispparam-cold-command = [
-			];
-		qcom,mdss-dsi-dispparam-cold-command-state = "dsi_hs_mode";
-
-		qcom,mdss-dsi-dispparam-cabcon-command_GUI = [
-			];
-		qcom,mdss-dsi-dispparam-cabcon-command_STILL = [
-
-				];
-		qcom,mdss-dsi-dispparam-cabcon-command_MOVIE = [
-
-				];
-		qcom,mdss-dsi-dispparam-cabcon-command-state = "dsi_hs_mode";
-		qcom,mdss-dsi-dispparam-cabcoff-command = [
-				];
-		qcom,mdss-dsi-dispparam-cabcoff-command-state = "dsi_hs_mode";
 	}; };
 
 

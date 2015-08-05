@@ -1,5 +1,4 @@
 /* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1350,8 +1349,6 @@ static struct device_node *mdss_dsi_find_panel_of_node(
 		pr_debug("%s:%d:%s:%s\n", __func__, __LINE__,
 			 panel_cfg, panel_name);
 
-		pr_info("%s:%d:%s:%s\n", __func__, __LINE__,
-			 panel_cfg, panel_name);
 		mdss_node = of_parse_phandle(pdev->dev.of_node,
 					     "qcom,mdss-mdp", 0);
 

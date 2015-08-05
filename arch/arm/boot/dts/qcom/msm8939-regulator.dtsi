@@ -1,5 +1,4 @@
 /* Copyright (c) 2014-2015, The Linux Foundation. All rights reserved.
- * Copyright (C) 2015 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -290,18 +289,22 @@
 			1137500 1137500 1137500>;
 		qcom,cpr-enable;
 	};
+
 	vsp_vreg: disp_vsp_vreg {
 		compatible = "regulator-fixed";
 		regulator-name = "vsp";
 		gpio = <&msm_gpio 116 0>;
 		enable-active-high;
-		regulator-boot-on; };
+		regulator-boot-on;
+	};
+
 	vsn_vreg: disp_vsn_vreg {
 		compatible = "regulator-fixed";
 		regulator-name = "vsn";
 		gpio = <&msm_gpio 114 0>;
 		enable-active-high;
-		regulator-boot-on; };
+		regulator-boot-on;
+	};
 };
 
 /* RPM controlled regulators */
