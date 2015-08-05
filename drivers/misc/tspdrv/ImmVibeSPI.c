@@ -21,7 +21,7 @@
 #include <linux/delay.h>
 #include <linux/err.h>
 #include <linux/clk.h>
-#include <linux/time.h>       /* for NSEC_PER_SEC */
+#include <linux/time.h>
 #include <linux/slab.h>
 #include <linux/hrtimer.h>
 #include "../../staging/android/timed_output.h"
@@ -33,7 +33,7 @@
 #define NUM_ACTUATORS		1
 #define ISA1000_BOARD_NAME	"ISA1000"
 #define PWM_FREQUENCY		30000
-#define DEFAULT_PWM_DUTY	127
+#define DEFAULT_PWM_DUTY	99
 #define ISA1000_VIB_DEFAULT_TIMEOUT	15000
 
 struct isa1000_vib {
@@ -59,14 +59,19 @@ static int isa1000_vib_set_duty(int pwm_duty)
 	struct rcg_clk *rcg;
 	struct clk_freq_tbl *nf;
 
-	if (IS_ERR_OR_NULL(vib_dev->vibrator_clk ) || !vib_dev->vibrator_clk ->parent) {
-		pr_err("vibrator_clk  error!\n");
+	if (IS_ERR_OR_NULL(vib_dev) || IS_ERR_OR_NULL(vib_dev->vibrator_clk) ||
+			!vib_dev->vibrator_clk->parent) {
+		pr_err("vibrator_clk error!\n");
 		return -ENODEV;
 	}
 
-	rcg = to_rcg_clk(vib_dev->vibrator_clk ->parent);
+	rcg = to_rcg_clk(vib_dev->vibrator_clk->parent);
 	nf = rcg->current_freq;
 
+	/*
+	 * balika011:
+	 * it looks like our motor has [0, 160] levels
+	 */
 	nf->d_val = (~(pwm_duty * 2 * 80 / 100)) & 0xff;
 	set_rate_mnd(rcg, nf);
 
@@ -77,11 +82,14 @@ int isa1000_vib_set_clock(struct platform_device *pdev)
 {
 	int ret;
 
-	vib_dev->vibrator_clk  = devm_clk_get(&pdev->dev, "vibrator_pwm");
-	if (IS_ERR_OR_NULL(vib_dev->vibrator_clk ))
+	if (IS_ERR_OR_NULL(vib_dev))
 		return -1;
 
-	ret = clk_set_rate(vib_dev->vibrator_clk , PWM_FREQUENCY);
+	vib_dev->vibrator_clk = devm_clk_get(&pdev->dev, "vibrator_pwm");
+	if (IS_ERR_OR_NULL(vib_dev->vibrator_clk))
+		return -1;
+
+	ret = clk_set_rate(vib_dev->vibrator_clk, PWM_FREQUENCY);
 	if (ret)
 		return ret;
 
@@ -100,7 +108,7 @@ int isa1000_vib_enable_clock()
 
 	mutex_lock(&vib_dev->lock);
 	if (likely(!vib_dev->clk_enabled)) {
-		ret = clk_prepare_enable(vib_dev->vibrator_clk );
+		ret = clk_prepare_enable(vib_dev->vibrator_clk);
 		vib_dev->clk_enabled = true;
 	}
 	mutex_unlock(&vib_dev->lock);
@@ -115,7 +123,7 @@ void isa1000_vib_disable_clock()
 
 	mutex_lock(&vib_dev->lock);
 	if (likely(vib_dev->clk_enabled)) {
-		clk_disable_unprepare(vib_dev->vibrator_clk );
+		clk_disable_unprepare(vib_dev->vibrator_clk);
 		vib_dev->clk_enabled = false;
 	}
 	mutex_unlock(&vib_dev->lock);
@@ -183,7 +191,7 @@ static int isa1000_vib_get_time(struct timed_output_dev *dev)
 
 	if (hrtimer_active(&vib->vib_timer)) {
 		ktime_t r = hrtimer_get_remaining(&vib->vib_timer);
-		return (int)ktime_to_us(r);
+		return (int) ktime_to_us(r);
 	} else
 		return 0;
 }
@@ -199,8 +207,8 @@ static enum hrtimer_restart isa1000_vib_timer_func(struct hrtimer *timer)
 	return HRTIMER_NORESTART;
 }
 
-/* This function assumes an input of [-127, 127] and mapped to [1,255] */
-/* If your PWM module does not take an input of [1,255] and mapping to [1%,99%]
+/* This function assumes an input of [1, 255] */
+/* If your PWM module does not take an input of [1, 255] and mapping to [1%, 99%]
  **    Please modify accordingly
  **/
 static void isa1000_vib_set_level(int level)
@@ -213,8 +221,8 @@ static void isa1000_vib_set_level(int level)
 
 	if  (level != 0) {
 		/* Set PWM duty cycle corresponding to the input 'level' */
-		/* mapping from [-127, 127] to [1%, 99%] */
-		rc = isa1000_vib_set_duty((level + 127) * 49 / 127 + 1);
+		/* mapping from [1, 255] to [1%, 99%] */
+		rc = isa1000_vib_set_duty(level * 49 / 127 + 1);
 		if (rc < 0) {
 			pr_err("%s: set duty failed\n", __func__);
 			goto chip_dwn;
@@ -223,13 +231,13 @@ static void isa1000_vib_set_level(int level)
 		isa1000_vib_enable_clock();
 
 		/* Enable ISA1000 */
-		gpio_set_value_cansleep(vib_dev->gpio_pwm_en, 1);
+		gpio_set_value_cansleep(vib_dev->gpio_pwm_en, true);
 		udelay(10);
-		gpio_set_value_cansleep(vib_dev->gpio_en, 1);
+		gpio_set_value_cansleep(vib_dev->gpio_en, true);
 	} else {
 		/* Disable ISA1000 */
-		gpio_set_value_cansleep(vib_dev->gpio_en, 0);
-		gpio_set_value_cansleep(vib_dev->gpio_pwm_en, 0);
+		gpio_set_value_cansleep(vib_dev->gpio_en, false);
+		gpio_set_value_cansleep(vib_dev->gpio_pwm_en, false);
 
 		/* Disable the PWM output */
 		isa1000_vib_disable_clock();
@@ -240,8 +248,8 @@ static void isa1000_vib_set_level(int level)
 	return;
 
 chip_dwn:
-	gpio_set_value_cansleep(vib_dev->gpio_en, 0);
-	gpio_set_value_cansleep(vib_dev->gpio_pwm_en, 0);
+	gpio_set_value_cansleep(vib_dev->gpio_en, false);
+	gpio_set_value_cansleep(vib_dev->gpio_pwm_en, false);
 }
 
 static int isa1000_setup(void)
@@ -274,14 +282,12 @@ static int isa1000_setup(void)
 		return ret;
 	}
 
-	gpio_direction_output(vib_dev->gpio_en, 0);
-	gpio_direction_output(vib_dev->gpio_pwm_en, 0);
+	gpio_direction_output(vib_dev->gpio_en, false);
+	gpio_direction_output(vib_dev->gpio_pwm_en, false);
 
 	pr_info("%s: %s set up\n", __func__, "isa1000");
 	return 0;
 }
-
-/************ ISA1000 specific section end **********/
 
 /*
  ** This function is necessary for the TSP Designer Bridge.
@@ -313,11 +319,8 @@ VibeStatus ImmVibeSPI_ForceOut_AmpDisable(VibeUInt8 nActuatorIndex)
  */
 VibeStatus ImmVibeSPI_ForceOut_AmpEnable(VibeUInt8 nActuatorIndex)
 {
-	/* Reset PWM frequency (only if necessary on Hong Mi 2A)*/
-	/* To be implemented with appropriate hardware access macros */
-
-	/* Set duty cycle to 50% (which correspond to the output level 0) */
-	isa1000_vib_set_level(0);
+	/* Set duty cycle to 50% */
+	isa1000_vib_set_level(127);
 
 	return VIBE_S_SUCCESS;
 }
@@ -392,12 +395,8 @@ VibeStatus ImmVibeSPI_ForceOut_Terminate(void)
 	/* Disable amp */
 	ImmVibeSPI_ForceOut_AmpDisable(0);
 
-	/* Set PWM frequency (only if necessary on Hong Mi 2A) */
-	/* To be implemented with appropriate hardware access macros */
-
 	/* Set duty cycle to 50% */
-	/* i.e. output level to 0 */
-	isa1000_vib_set_level(0);
+	isa1000_vib_set_level(127);
 
 	return VIBE_S_SUCCESS;
 }
@@ -417,7 +416,6 @@ VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex, VibeUInt16 n
 
 	/* M = 1, N = 256, 1 <= nDutyCycle <= (N-M) */
 
-	/* Output force: nForce is mapped from [-127, 127] to [1, 255] */
 	int level;
 
 	if(nOutputSignalBitDepth == 8) {
@@ -441,7 +439,8 @@ VibeStatus ImmVibeSPI_ForceOut_SetSamples(VibeUInt8 nActuatorIndex, VibeUInt16 n
 		return VIBE_E_FAIL;
 	}
 
-	isa1000_vib_set_level(level);
+	/* Output force is mapped from [-127, 127] to [1, 255] */
+	isa1000_vib_set_level(level + 128);
 
 	return VIBE_S_SUCCESS;
 }
